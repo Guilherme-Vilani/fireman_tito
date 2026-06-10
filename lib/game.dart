@@ -53,6 +53,19 @@ class _GameState extends State<Game> {
   Timer? gameTimer;
   Timer? obstaculoTimer;
 
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      chao = MediaQuery.of(context).size.height - 120;
+
+      posY = chao - tamanhoQuadrado;
+
+      iniciarJogo();
+    });
+  }
+
   void iniciarJogo() {
     gameTimer?.cancel();
     obstaculoTimer?.cancel();
@@ -127,7 +140,7 @@ class _GameState extends State<Game> {
       });
     });
 
-    obstaculoTimer = Timer.periodic(Duration(seconds: 2), (_){
+    obstaculoTimer = Timer.periodic(Duration(seconds: 2), (_) {
       if (!morreu) {
         gerarObstaculo();
       }
@@ -148,7 +161,73 @@ class _GameState extends State<Game> {
     });
   }
 
-  showGameOverDialog() {}
+  pular() {
+    if (posY >= chao - tamanhoQuadrado) {
+      setState(() {
+        velocidadeY = -15;
+      });
+    }
+  }
+
+  andarParaDireita() {
+    setState(() {
+      andarDireita = true;
+    });
+  }
+
+  andarParaEsquerda() {
+    setState(() {
+      andarEsquerda = true;
+    });
+  }
+
+  pararAndarDireita() {
+    setState(() {
+      andarDireita = false;
+    });
+  }
+
+  pararAndarEsquerda() {
+    setState(() {
+      andarEsquerda = false;
+    });
+  }
+
+  reiniciarJogo() {
+    setState(() {
+      posX = 0;
+      posY = 50;
+      velocidadeY = 0;
+      morreu = false;
+      obstaculos.clear();
+      groundOffset = 0;
+
+      iniciarJogo();
+    });
+  }
+
+  showGameOverDialog() {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: Text("SE QUEIMOU!!!"),
+          content: Column(
+            children: [
+              Text("Você infelizmente se queimou. Tente Novamente."),
+              GestureDetector(
+                onTap: () {
+                  // Evento que irá reiniciar o jogo.
+                  reiniciarJogo();
+                },
+                child: Container(child: Text("Reiniciar")),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
